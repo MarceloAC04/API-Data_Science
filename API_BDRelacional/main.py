@@ -39,7 +39,7 @@ class Carros(mybd.Model):
             "ano": self.ano,
             "cor": self.cor,
             "valor": float(self.valor),
-            "nuemro_vendas": self.nuemro_vendas
+            "numero_vendas": self.nuemro_vendas
         }
         
 # ---------------------------------------------------------------------
