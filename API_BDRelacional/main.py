@@ -43,7 +43,6 @@ class Carros(mybd.Model):
         }
         
 # ---------------------------------------------------------------------
-
 # METODO 1 - GET
 @app.route('/carros', methods=['GET'])
 def seleciona_carro():
@@ -53,7 +52,87 @@ def seleciona_carro():
                   for carro in carro_selecionado]
     return gera_resposta(200, "Lista de carros", carro_json)
 
+# ---------------------------------------------------------------------
+# METODO 2 - GET por Id
+@app.route('/carros/<id_carro>', methods=['GET'])
+def seleciona_carro_id(id_carro):
+    carro_selecionado = Carros.query.filter_by(id_carro=id_carro).first()
+    carro_json = carro_selecionado.to_json()
+    return gera_resposta(200, "Carro por Id", carro_json)
 
+# ---------------------------------------------------------------------
+# METODO 3 - POST
+@app.route('/carros', methods=['POST'])
+def inserir_carro():
+    requisicao = request.get_json()
+    try:
+        carro = Carros(
+            id_carro= requisicao['id_carro'],
+            marca= requisicao['marca'],
+            modelo = requisicao['modelo'],
+            ano= requisicao['ano'],
+            valor= requisicao['valor'],
+            cor= requisicao['cor'],
+            nuemro_vendas= requisicao['numero_vendas'],
+        )
+        
+        # Adicionar ao banco
+        mybd.session.add(carro)
+        mybd.session.commit()
+        
+        return gera_resposta(201, "Novo carro inserido com sucesso", carro.to_json())
+    except Exception as e:
+     print('Erro', e)
+     return  gera_resposta(400, {}, "Erro ao Cadastrar!")
+ 
+# ---------------------------------------------------------------------
+# METODO 4 - DELETE
+@app.route('/carros/<id_carro>', methods=['DELETE'])
+def deletar_carro(id_carro):
+    carro = Carros.query.filter_by(id_carro=id_carro).first()
+    
+    try:
+        mybd.session.delete(carro)
+        mybd.session.commit()
+        return gera_resposta(200, 'Carro exluido com sucesso!', carro.to_json())
+    except Exception as e:
+        print('Erro', e)
+        
+        return  gera_resposta(400, {}, "Erro ao Excluir!")
+
+# ---------------------------------------------------------------------
+# METODO 5 - PUT
+@app.route('/carros/<id_carro>', methods=['PUT'])
+def atualizar_carro(id_carro):
+    requisicao = request.get_json()
+    try:
+        carro_atualizado = Carros(
+            id_carro= id_carro,
+            marca= requisicao['marca'],
+            modelo = requisicao['modelo'],  
+            ano= requisicao['ano'],
+            valor= requisicao['valor'],
+            cor= requisicao['cor'],
+            nuemro_vendas= requisicao['numero_vendas'],
+        )
+        
+        carro_antigo = Carros.query.filter_by(id_carro=id_carro).first()
+        
+        carro_antigo.marca = carro_atualizado.marca if carro_atualizado.marca != "" else carro_antigo.marca
+        carro_antigo.modelo = carro_atualizado.modelo if carro_atualizado.modelo != "" else carro_antigo.modelo
+        carro_antigo.ano = carro_atualizado.ano if carro_atualizado.ano != "" else carro_antigo.ano
+        carro_antigo.valor  = carro_atualizado.valor if carro_atualizado.valor != "" else carro_antigo.valor
+        carro_antigo.cor = carro_atualizado.cor if carro_atualizado.cor != "" else carro_antigo.valor
+        carro_antigo.nuemro_vendas = carro_atualizado.nuemro_vendas if carro_atualizado.nuemro_vendas != "" else carro_antigo.nuemro_vendas
+        
+        
+        # Adicionar ao banco
+        mybd.session.commit()
+        
+        return gera_resposta(201, "Carro atualizado com sucesso", carro_antigo.to_json())
+    except Exception as e:
+     print('Erro', e)
+     return  gera_resposta(400, {}, "Erro ao Cadastrar!")
 
 
 # ------------------
